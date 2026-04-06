@@ -15,6 +15,7 @@ void *mscc_arena_malloc(mscc_arena_t *a, ptrdiff_t size, ptrdiff_t align);
 void mscc_arena_free(mscc_arena_t *a, void *ptr, ptrdiff_t size,
                      ptrdiff_t align);
 void *mscc_arena_realloc(mscc_arena_t *a, void *ptr, ptrdiff_t old_size,
-                         ptrdiff_t new_size, ptrdiff_t align);
+                         ptrdiff_t old_align, ptrdiff_t new_size,
+                         ptrdiff_t new_align);
 
 #endif

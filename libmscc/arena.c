@@ -54,9 +54,10 @@ void mscc_arena_free(mscc_arena_t *a, void *ptr, ptrdiff_t size,
     Modified.
  */
 void *mscc_arena_realloc(mscc_arena_t *a, void *ptr, ptrdiff_t old_size,
-                         ptrdiff_t new_size, ptrdiff_t align) {
+                         ptrdiff_t old_align, ptrdiff_t new_size,
+                         ptrdiff_t new_align) {
   // This just allocates a new region without reclaiming memory
   assert(new_size >= old_size);
-  void *r = mscc_arena_malloc(a, new_size, align);
+  void *r = mscc_arena_malloc(a, new_size, new_align);
   return memcpy(r, ptr, old_size);
 }
