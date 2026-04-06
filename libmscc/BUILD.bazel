@@ -2,20 +2,12 @@ load("//tools/cc:defs.bzl", "c23_binary", "c23_library")
 
 c23_library(
     name = "mscc",
-    srcs = [],
-    hdrs = [
-        "mscc.h",
-    ],
-    visibility = ["//visibility:public"],
-    deps = [":mscc-alloc"],
-)
-
-c23_library(
-    name = "mscc-alloc",
     srcs = ["alloc.c"],
     hdrs = [
         "alloc.h",
+        "mscc.h",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
