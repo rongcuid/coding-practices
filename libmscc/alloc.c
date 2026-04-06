@@ -17,7 +17,7 @@ void *mscc_realloc(mscc_allocator_t *alloc, void *ptr, ptrdiff_t old_size,
   assert(alloc->realloc != nullptr);
   assert(old_size >= 0);
   assert(old_align >= 0);
-  assert(new_size >= 0);
+  assert(new_size >= old_size);
   assert(new_align >= 0);
   return alloc->realloc(alloc->context, ptr, old_size, old_align, new_size,
                         new_align);
