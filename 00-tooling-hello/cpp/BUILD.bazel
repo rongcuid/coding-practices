@@ -1,0 +1,15 @@
+load("//tools/cc:defs.bzl", "cxx20_binary", "cxx20_library")
+
+cxx20_library(
+    name = "hello_lib",
+    srcs = ["hello.cc"],
+    hdrs = ["hello.h"],
+    visibility = ["//visibility:public"],
+)
+
+cxx20_binary(
+    name = "hello_cpp",
+    srcs = ["main.cc"],
+    deps = [":hello_lib"],
+    visibility = ["//visibility:public"],
+)

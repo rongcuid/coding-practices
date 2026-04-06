@@ -1,0 +1,15 @@
+load("//tools/cc:defs.bzl", "c23_binary", "c23_library")
+
+c23_library(
+    name = "hello_lib",
+    srcs = ["hello.c"],
+    hdrs = ["hello.h"],
+    visibility = ["//visibility:public"],
+)
+
+c23_binary(
+    name = "hello_c",
+    srcs = ["main.c"],
+    deps = [":hello_lib"],
+    visibility = ["//visibility:public"],
+)
