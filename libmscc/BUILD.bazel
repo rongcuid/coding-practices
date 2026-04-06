@@ -16,7 +16,6 @@ c23_library(
     hdrs = [
         "alloc.h",
     ],
-    visibility = ["//visibility:public"],
 )
 
 filegroup(
