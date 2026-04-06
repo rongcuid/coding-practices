@@ -47,17 +47,29 @@ void mscc_arena_free(mscc_arena_t *a, void *ptr, ptrdiff_t size,
   }
 }
 
-/**
-    Credits: Chris Wellons:
-    * https://nullprogram.com/blog/2023/09/27/
-    * https://nullprogram.com/blog/2023/12/17/
-    Modified.
- */
 void *mscc_arena_realloc(mscc_arena_t *a, void *ptr, ptrdiff_t old_size,
                          ptrdiff_t old_align, ptrdiff_t new_size,
                          ptrdiff_t new_align) {
-  // This just allocates a new region without reclaiming memory
   assert(new_size >= old_size);
+  // If the object is the most recently allocated object (i.e. pointer equal to
+  // the end pointer), reclaim space.
+  if (ptr == a->end) {
+    ptrdiff_t old_padding = -old_size & (old_align - 1);
+    char *old_end = a->end;
+
+    a->end += old_size + old_padding;
+
+    void *r = mscc_arena_malloc(a, new_size, new_align);
+    if (r == NULL) {
+      a->end = old_end;
+      return NULL;
+    }
+    return memmove(r, ptr, old_size);
+  }
+
   void *r = mscc_arena_malloc(a, new_size, new_align);
+  if (r == NULL) {
+    return NULL;
+  }
   return memcpy(r, ptr, old_size);
 }
