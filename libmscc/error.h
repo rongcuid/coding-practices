@@ -1,7 +1,9 @@
 #ifndef MSCC_ERROR_H_
 #define MSCC_ERROR_H_
 
-typedef enum {
+#include <stdint.h>
+
+typedef enum : uint32_t {
   MSCC_OK = 0,
   MSCC_ERR = 1,
   MSCC_NOMEM,
