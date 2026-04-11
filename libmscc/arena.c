@@ -11,7 +11,8 @@ mscc_arena_t mscc_arena_from_buf(void *buf, ptrdiff_t capacity) {
   return a;
 }
 
-mscc_arena_t mscc_arena_suballoc(mscc_arena_t *a, ptrdiff_t capacity) {
+mscc_arena_t mscc_arena_suballoc_unchecked(mscc_arena_t *a,
+                                           ptrdiff_t capacity) {
   return mscc_arena_from_buf(mscc_arena_malloc(a, capacity, 1), capacity);
 }
 
