@@ -1,6 +1,5 @@
 #include "arena.h"
 
-#include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -50,7 +49,9 @@ void mscc_arena_free(mscc_arena_t *a, void *ptr, ptrdiff_t size,
 void *mscc_arena_realloc(mscc_arena_t *a, void *ptr, ptrdiff_t old_size,
                          ptrdiff_t old_align, ptrdiff_t new_size,
                          ptrdiff_t new_align) {
-  assert(new_size >= old_size);
+  if (new_size < old_size) {
+    return NULL;
+  }
   // If the object is the most recently allocated object (i.e. pointer equal to
   // the end pointer), reclaim space.
   if (ptr == a->end) {
