@@ -34,14 +34,15 @@ void mscc_free(const mscc_allocator_t *alloc, void *ptr, ptrdiff_t size,
   alloc->free(alloc->context, ptr, size, align);
 }
 
-void *c_malloc(void *context, ptrdiff_t size, ptrdiff_t align) {
+static void *c_malloc(void *context, ptrdiff_t size, ptrdiff_t align) {
   (void)context;
   (void)align;
   return malloc(size);
 }
 
-void *c_realloc(void *context, void *ptr, ptrdiff_t old_size,
-                ptrdiff_t old_align, ptrdiff_t new_size, ptrdiff_t new_align) {
+static void *c_realloc(void *context, void *ptr, ptrdiff_t old_size,
+                       ptrdiff_t old_align, ptrdiff_t new_size,
+                       ptrdiff_t new_align) {
   (void)context;
   (void)old_size;
   (void)old_align;
@@ -49,7 +50,7 @@ void *c_realloc(void *context, void *ptr, ptrdiff_t old_size,
   return realloc(ptr, new_size);
 }
 
-void c_free(void *context, void *ptr, ptrdiff_t size, ptrdiff_t align) {
+static void c_free(void *context, void *ptr, ptrdiff_t size, ptrdiff_t align) {
   (void)context;
   (void)size;
   (void)align;
