@@ -55,11 +55,17 @@ typedef struct {
   mscc_free_pfn free;
 } mscc_allocator_t;
 
-void *mscc_malloc(mscc_allocator_t *alloc, ptrdiff_t size, ptrdiff_t align);
-void *mscc_realloc(mscc_allocator_t *alloc, void *ptr, ptrdiff_t old_size,
+/**
+ * @brief The default C stdlib allocator.
+ */
+extern const mscc_allocator_t mscc_c_allocator;
+
+void *mscc_malloc(const mscc_allocator_t *alloc, ptrdiff_t size,
+                  ptrdiff_t align);
+void *mscc_realloc(const mscc_allocator_t *alloc, void *ptr, ptrdiff_t old_size,
                    ptrdiff_t old_align, ptrdiff_t new_size,
                    ptrdiff_t new_align);
-void mscc_free(mscc_allocator_t *alloc, void *ptr, ptrdiff_t size,
+void mscc_free(const mscc_allocator_t *alloc, void *ptr, ptrdiff_t size,
                ptrdiff_t align);
 
 #endif

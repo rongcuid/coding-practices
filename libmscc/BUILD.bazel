@@ -5,11 +5,14 @@ c23_library(
     srcs = [
         "alloc.c",
         "arena.c",
+        "text.c",
     ],
     hdrs = [
         "alloc.h",
         "arena.h",
+        "error.h",
         "mscc.h",
+        "text.h",
     ],
     visibility = ["//visibility:public"],
 )
