@@ -1,5 +1,5 @@
 load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake", "configure_make")
-load(":python_toolchain.bzl", "exec_python_tool")
+load("//tools/python/:python_toolchain.bzl", "exec_python_tool")
 
 package(default_visibility = ["//visibility:public"])
 
