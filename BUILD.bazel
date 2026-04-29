@@ -4,6 +4,8 @@ filegroup(
         "//00-tooling-hello/c:hello_c",
         "//00-tooling-hello/c:hello_c_wasm",
         "//00-tooling-hello/cpp:hello_cpp",
+        "//01-quantum-hide-n-seek:game",
+        "//01-quantum-hide-n-seek:game-wasm",
         "//libmsc:mscc_shared",
         "//libmsc:mscc_static",
     ],

@@ -1,0 +1,26 @@
+load("@emsdk//emscripten_toolchain:wasm_rules.bzl", "wasm_cc_binary")
+load("//tools/cc:defs.bzl", "c23_binary")
+
+c23_binary(
+    name = "game",
+    srcs = ["main.c"],
+    visibility = ["//visibility:public"],
+    deps = ["//thirdparty:sdl3_shared"],
+)
+
+c23_binary(
+    name = "game.html",
+    srcs = [
+        "main.c",
+    ],
+    features = ["-output_format_js"],
+    linkopts = ["--oformat=html"],
+    tags = ["manual"],
+    deps = ["//thirdparty:sdl3_static"],
+)
+
+wasm_cc_binary(
+    name = "game-wasm",
+    cc_target = ":game.html",
+    visibility = ["//visibility:public"],
+)
