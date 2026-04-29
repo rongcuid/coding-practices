@@ -100,11 +100,46 @@ void observation_deinit(observation_t *obs) {
 
 msc_err_t timeline_init(timeline_t *tl, ptrdiff_t initial_capacity,
                         const msc_allocator_t *alloc) {
-  // TODO
-  return MSC_ERR;
+  msc_err_t err = MSC_ERR;
+  board_state_t *board_states = nullptr;
+  observation_t *observations = nullptr;
+  if ((board_states =
+           msc_malloc(alloc, sizeof(board_state_t) * initial_capacity,
+                      _Alignof(board_state_t))) == nullptr) {
+    err = MSC_NOMEM;
+    goto err;
+  }
+  if ((observations =
+           msc_malloc(alloc, sizeof(observation_t) * initial_capacity,
+                      _Alignof(observation_t))) == nullptr) {
+    err = MSC_NOMEM;
+    goto err;
+  }
+  *tl = (timeline_t){.alloc = alloc,
+                     .len = 0,
+                     .cap = initial_capacity,
+                     .board_states = board_states,
+                     .observations = observations};
+  err = MSC_OK;
+  goto end;
+err:
+  if (observations != nullptr) {
+    msc_free(alloc, observations, sizeof(observation_t) * initial_capacity,
+             _Alignof(observation_t));
+  }
+  if (board_states != nullptr) {
+    msc_free(alloc, board_states, sizeof(board_state_t) * initial_capacity,
+             _Alignof(board_state_t));
+  }
+end:
+  return err;
 }
 void timeline_deinit(timeline_t *tl) {
-  // TODO
+  msc_free(tl->alloc, tl->observations, sizeof(observation_t) * tl->cap,
+           _Alignof(observation_t));
+  msc_free(tl->alloc, tl->board_states, sizeof(board_state_t) * tl->cap,
+           _Alignof(board_state_t));
+  *tl = (timeline_t){0};
 }
 
 observation_result_t observe_hider(const board_state_t *board,
