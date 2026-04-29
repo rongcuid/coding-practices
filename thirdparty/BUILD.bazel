@@ -1,11 +1,18 @@
 load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake", "configure_make")
-load("//tools/python/:python_toolchain.bzl", "exec_python_tool")
+load("//tools/python:python_toolchain.bzl", "exec_python_tool")
 
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "SDL3_srcs",
     srcs = glob(["SDL/**"]),
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "nuklear",
+    hdrs = ["Nuklear/nuklear.h"],
+    strip_include_prefix = "Nuklear",
     visibility = ["//visibility:public"],
 )
 
