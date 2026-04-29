@@ -14,7 +14,11 @@ c23_binary(
     name = "game",
     srcs = [":srcs"],
     visibility = ["//visibility:public"],
-    deps = ["//thirdparty:sdl3_shared"],
+    deps = [
+        "//libmsc:mscc",
+        "//thirdparty:nuklear",
+        "//thirdparty:sdl3_shared",
+    ],
 )
 
 c23_binary(
@@ -23,7 +27,11 @@ c23_binary(
     features = ["-output_format_js"],
     linkopts = ["--oformat=html"],
     tags = ["manual"],
-    deps = ["//thirdparty:sdl3_static"],
+    deps = [
+        "//libmsc:mscc",
+        "//thirdparty:nuklear",
+        "//thirdparty:sdl3_static",
+    ],
 )
 
 wasm_cc_binary(
