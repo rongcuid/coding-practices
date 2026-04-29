@@ -11,10 +11,12 @@
 #pragma once
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include <msc.h>
 
 typedef struct {
+  const msc_allocator_t *alloc;
   ptrdiff_t m;
   ptrdiff_t n;
   float *probabilities;
@@ -44,6 +46,10 @@ typedef struct {
   board_state_t *board_states;
   observation_t *observations;
 } timeline_t;
+
+msc_err_t board_init(board_state_t *board, ptrdiff_t m, ptrdiff_t n,
+                     const msc_allocator_t *alloc);
+void board_deinit(board_state_t *board);
 
 observation_result_t observe_hider(const board_state_t *board,
                                    const observation_t *observation,
