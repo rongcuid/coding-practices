@@ -43,6 +43,70 @@ void board_deinit(board_state_t *board) {
   *board = (board_state_t){0};
 }
 
+msc_err_t observation_init(observation_t *obs, ptrdiff_t initial_capacity,
+                           const msc_allocator_t *alloc) {
+  msc_err_t err = MSC_ERR;
+  ptrdiff_t *xs = nullptr, *ys = nullptr;
+  int32_t *tags = nullptr;
+  if ((xs = msc_malloc(alloc, sizeof(ptrdiff_t) * initial_capacity,
+                       _Alignof(ptrdiff_t)))) {
+    err = MSC_NOMEM;
+    goto err;
+  }
+  if ((ys = msc_malloc(alloc, sizeof(ptrdiff_t) * initial_capacity,
+                       _Alignof(ptrdiff_t)))) {
+    err = MSC_NOMEM;
+    goto err;
+  }
+  if ((tags = msc_malloc(alloc, sizeof(int32_t) * initial_capacity,
+                         _Alignof(int32_t)))) {
+    err = MSC_NOMEM;
+    goto err;
+  }
+  *obs = (observation_t){.alloc = alloc,
+                         .len = 0,
+                         .cap = initial_capacity,
+                         .xs = xs,
+                         .ys = ys,
+                         .tags = tags};
+  err = MSC_OK;
+  goto end;
+err:
+  if (xs != nullptr) {
+    msc_free(alloc, xs, sizeof(ptrdiff_t) * initial_capacity,
+             _Alignof(ptrdiff_t));
+  }
+  if (ys != nullptr) {
+    msc_free(alloc, ys, sizeof(ptrdiff_t) * initial_capacity,
+             _Alignof(ptrdiff_t));
+  }
+  if (tags != nullptr) {
+    msc_free(alloc, tags, sizeof(int32_t) * initial_capacity,
+             _Alignof(int32_t));
+  }
+end:
+  return err;
+}
+
+void observation_deinit(observation_t *obs) {
+  msc_free(obs->alloc, obs->xs, sizeof(ptrdiff_t) * obs->cap,
+           _Alignof(ptrdiff_t));
+  msc_free(obs->alloc, obs->ys, sizeof(ptrdiff_t) * obs->cap,
+           _Alignof(ptrdiff_t));
+  msc_free(obs->alloc, obs->tags, sizeof(int32_t) * obs->cap,
+           _Alignof(int32_t));
+  *obs = (observation_t){0};
+}
+
+msc_err_t timeline_init(timeline_t *tl, ptrdiff_t initial_capacity,
+                        const msc_allocator_t *alloc) {
+  // TODO
+  return MSC_ERR;
+}
+void timeline_deinit(timeline_t *tl) {
+  // TODO
+}
+
 observation_result_t observe_hider(const board_state_t *board,
                                    const observation_t *observation,
                                    const msc_allocator_t *up,

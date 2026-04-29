@@ -24,6 +24,7 @@ typedef struct {
 } board_state_t;
 
 typedef struct {
+  const msc_allocator_t *alloc;
   ptrdiff_t len;
   ptrdiff_t cap;
   ptrdiff_t *xs;
@@ -50,6 +51,14 @@ typedef struct {
 msc_err_t board_init(board_state_t *board, ptrdiff_t m, ptrdiff_t n,
                      const msc_allocator_t *alloc);
 void board_deinit(board_state_t *board);
+
+msc_err_t observation_init(observation_t *obs, ptrdiff_t initial_capacity,
+                           const msc_allocator_t *alloc);
+void observation_deinit(observation_t *obs);
+
+msc_err_t timeline_init(timeline_t *tl, ptrdiff_t initial_capacity,
+                        const msc_allocator_t *alloc);
+void timeline_deinit(timeline_t *tl);
 
 observation_result_t observe_hider(const board_state_t *board,
                                    const observation_t *observation,
