@@ -4,8 +4,8 @@ filegroup(
         "//00-tooling-hello/c:hello_c",
         "//00-tooling-hello/c:hello_c_wasm",
         "//00-tooling-hello/cpp:hello_cpp",
-        "//libmscc:mscc_shared",
-        "//libmscc:mscc_static",
+        "//libmsc:mscc_shared",
+        "//libmsc:mscc_static",
     ],
     visibility = ["//visibility:public"],
 )

@@ -1,0 +1,3 @@
+[submodule "libmsc"]
+	path = libmsc
+	url = git@github.com:rongcuid/libmsc.git
