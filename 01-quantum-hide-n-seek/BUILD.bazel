@@ -1,18 +1,25 @@
 load("@emsdk//emscripten_toolchain:wasm_rules.bzl", "wasm_cc_binary")
 load("//tools/cc:defs.bzl", "c23_binary")
 
+filegroup(
+    name = "srcs",
+    srcs = glob([
+        "*.c",
+        "*.h",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
 c23_binary(
     name = "game",
-    srcs = ["main.c"],
+    srcs = [":srcs"],
     visibility = ["//visibility:public"],
     deps = ["//thirdparty:sdl3_shared"],
 )
 
 c23_binary(
     name = "game.html",
-    srcs = [
-        "main.c",
-    ],
+    srcs = [":srcs"],
     features = ["-output_format_js"],
     linkopts = ["--oformat=html"],
     tags = ["manual"],
