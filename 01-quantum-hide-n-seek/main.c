@@ -8,9 +8,10 @@
 #include "nuklear_sdl3.h"
 
 typedef struct {
+  const msc_allocator_t *alloc;
   SDL_Window *window;
   SDL_Renderer *renderer;
-  struct nk_context *ctx;
+  struct nk_context *nk;
   struct nk_colorf bg;
   enum nk_anti_aliasing AA;
 } app_t;
@@ -72,6 +73,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
     return nk_sdl_fail();
   }
 
+  app->alloc = &sdl_alloc;
+
   if (!SDL_CreateWindowAndRenderer("Nuklear: SDL3 Renderer", 1280, 720,
                                    SDL_WINDOW_RESIZABLE, &app->window,
                                    &app->renderer)) {
@@ -103,7 +106,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
   }
 
   ctx = nk_sdl_init(app->window, app->renderer, nk_sdl_allocator());
-  app->ctx = ctx;
+  app->nk = ctx;
 
   {
     struct nk_font_atlas *atlas;
@@ -149,7 +152,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
    * if your renderer uses custom scale. */
   SDL_ConvertEventToRenderCoordinates(app->renderer, event);
 
-  nk_sdl_handle_event(app->ctx, event);
+  nk_sdl_handle_event(app->nk, event);
 
   return SDL_APP_CONTINUE;
 }
@@ -157,7 +160,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
 /* This function runs once per frame, and is the heart of the program. */
 SDL_AppResult SDL_AppIterate(void *appstate) {
   app_t *app = appstate;
-  struct nk_context *ctx = app->ctx;
+  struct nk_context *ctx = app->nk;
 
   nk_input_end(ctx);
 
@@ -218,5 +221,11 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 
 /* This function runs once at shutdown. */
 void SDL_AppQuit(void *appstate, SDL_AppResult result) {
-  /* SDL will clean up the window/renderer for us. */
+  (void)result;
+  app_t *app = appstate;
+  nk_input_end(app->nk);
+  nk_sdl_shutdown(app->nk);
+  SDL_DestroyRenderer(app->renderer);
+  SDL_DestroyWindow(app->window);
+  msc_free(app->alloc, app, sizeof(app_t), _Alignof(app_t));
 }
