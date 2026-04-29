@@ -1,3 +1,4 @@
+load("@emsdk//emscripten_toolchain:wasm_rules.bzl", "wasm_cc_binary")
 load("//tools/cc:defs.bzl", "c23_binary", "c23_library")
 
 c23_library(
@@ -10,6 +11,24 @@ c23_library(
 c23_binary(
     name = "hello_c",
     srcs = ["main.c"],
+    visibility = ["//visibility:public"],
     deps = [":hello_lib"],
+)
+
+c23_binary(
+    name = "hello_c_wasm.html",
+    srcs = [
+        "hello.c",
+        "hello.h",
+        "main.c",
+    ],
+    features = ["-output_format_js"],
+    linkopts = ["--oformat=html"],
+    tags = ["manual"],
+)
+
+wasm_cc_binary(
+    name = "hello_c_wasm",
+    cc_target = ":hello_c_wasm.html",
     visibility = ["//visibility:public"],
 )
