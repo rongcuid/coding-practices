@@ -6,8 +6,6 @@ filegroup(
         "//00-tooling-hello/cpp:hello_cpp",
         "//01-quantum-hide-n-seek:game",
         "//01-quantum-hide-n-seek:game-wasm",
-        "//libmsc:msc_shared",
-        "//libmsc:msc_static",
     ],
     visibility = ["//visibility:public"],
 )

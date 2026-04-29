@@ -18,22 +18,40 @@ typedef struct {
   ptrdiff_t m;
   ptrdiff_t n;
   float *probabilities;
-} hider_state_t;
+  bool *is_exit;
+} board_state_t;
 
 typedef struct {
   ptrdiff_t len;
+  ptrdiff_t cap;
   ptrdiff_t *xs;
   ptrdiff_t *ys;
+  int32_t *tags;
 } observation_t;
 
 typedef struct {
-  hider_state_t next_before_collapse;
+  board_state_t next_before_collapse;
   bool collapsed;
+  bool exited;
   ptrdiff_t collapse_x;
   ptrdiff_t collapse_y;
 } observation_result_t;
 
-observation_result_t observe_hider(const hider_state_t *hider,
-                                   const observation_t *observation_t,
+typedef struct {
+  const msc_allocator_t *alloc;
+  ptrdiff_t len;
+  ptrdiff_t cap;
+  board_state_t *board_states;
+  observation_t *observations;
+} timeline_t;
+
+observation_result_t observe_hider(const board_state_t *board,
+                                   const observation_t *observation,
                                    const msc_allocator_t *up,
                                    msc_arena_t scratch);
+
+void push_timeline(timeline_t *t, board_state_t *board,
+                   observation_t *observation, msc_arena_t scratch);
+
+void pop_timeline(timeline_t *t, board_state_t **board_state,
+                  observation_t **observation);
