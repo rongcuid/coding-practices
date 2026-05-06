@@ -19,7 +19,8 @@ typedef struct {
   const msc_allocator_t *alloc;
   ptrdiff_t m;
   ptrdiff_t n;
-  float *probabilities;
+  // Row-major
+  float *scores;
   bool *is_exit;
 } board_state_t;
 
@@ -60,10 +61,10 @@ msc_err_t timeline_init(timeline_t *tl, ptrdiff_t initial_capacity,
                         const msc_allocator_t *alloc);
 void timeline_deinit(timeline_t *tl);
 
-observation_result_t observe_hider(const board_state_t *board,
-                                   const observation_t *observation,
-                                   const msc_allocator_t *up,
-                                   msc_arena_t scratch);
+msc_err_t observe_hider(const board_state_t *board,
+                        const observation_t *observation,
+                        observation_result_t *result, const msc_allocator_t *up,
+                        msc_arena_t scratch);
 
 void push_timeline(timeline_t *t, board_state_t *board,
                    observation_t *observation, msc_arena_t scratch);

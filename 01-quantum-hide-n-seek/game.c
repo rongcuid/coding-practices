@@ -1,12 +1,14 @@
 #include "game.h"
 
+#include "microtensor.h"
+
 msc_err_t board_init(board_state_t *board, ptrdiff_t m, ptrdiff_t n,
                      const msc_allocator_t *alloc) {
   msc_err_t err = MSC_ERR;
-  float *probabilities = nullptr;
+  float *scores = nullptr;
   bool *is_exit = nullptr;
-  if ((probabilities = msc_malloc(alloc, sizeof(float) * m * n,
-                                  _Alignof(float))) == nullptr) {
+  if ((scores = msc_malloc(alloc, sizeof(float) * m * n, _Alignof(float))) ==
+      nullptr) {
     err = MSC_NOMEM;
     goto err;
   }
@@ -19,7 +21,7 @@ msc_err_t board_init(board_state_t *board, ptrdiff_t m, ptrdiff_t n,
       .alloc = alloc,
       .m = m,
       .n = n,
-      .probabilities = probabilities,
+      .scores = scores,
       .is_exit = is_exit,
   };
   err = MSC_OK;
@@ -28,16 +30,16 @@ err:
   if (is_exit != nullptr) {
     msc_free(alloc, is_exit, sizeof(bool) * m * n, _Alignof(bool));
   }
-  if (probabilities != nullptr) {
-    msc_free(alloc, probabilities, sizeof(float) * m * n, _Alignof(bool));
+  if (scores != nullptr) {
+    msc_free(alloc, scores, sizeof(float) * m * n, _Alignof(bool));
   }
 end:
   return err;
 }
 
 void board_deinit(board_state_t *board) {
-  msc_free(board->alloc, board->probabilities,
-           sizeof(float) * board->m * board->n, _Alignof(float));
+  msc_free(board->alloc, board->scores, sizeof(float) * board->m * board->n,
+           _Alignof(float));
   msc_free(board->alloc, board->is_exit, sizeof(bool) * board->m * board->n,
            _Alignof(bool));
   *board = (board_state_t){0};
@@ -142,13 +144,66 @@ void timeline_deinit(timeline_t *tl) {
   *tl = (timeline_t){0};
 }
 
-observation_result_t observe_hider(const board_state_t *board,
-                                   const observation_t *observation,
-                                   const msc_allocator_t *up,
-                                   msc_arena_t scratch) {
-  observation_result_t result = {0};
-  // TODO
-  return result;
+// TODO: currently doesn't handle exits.
+msc_err_t observe_hider(const board_state_t *board,
+                        const observation_t *observation,
+                        observation_result_t *result, const msc_allocator_t *up,
+                        msc_arena_t scratch) {
+  msc_err_t err = MSC_ERR;
+  // We calculate gradient on the internal grid only, so it's a (M-1) x (N-1)
+  // matrix. Gradient is computed on a staggered grid.
+  // U-component corresponds to the i-component.
+  float *dsdu = msc_arena_malloc(
+      &scratch, sizeof(float) * (board->m - 1) * (board->n - 1),
+      _Alignof(float));
+  if (dsdu == nullptr) {
+    err = MSC_NOMEM;
+    goto err;
+  }
+  // V-component corresponds to the j-component.
+  float *dsdv = msc_arena_malloc(
+      &scratch, sizeof(float) * (board->m - 1) * (board->n - 1),
+      _Alignof(float));
+  if (dsdv == nullptr) {
+    err = MSC_NOMEM;
+    goto err;
+  }
+  // Compute the gradient.
+  const ptrdiff_t board_shape[] = {board->m, board->n};
+  const ptrdiff_t grad_shape[] = {board->m - 1, board->n - 1};
+  for (ptrdiff_t u = 0; u < grad_shape[0]; ++u) {
+    for (ptrdiff_t v = 0; v < grad_shape[1]; ++v) {
+      ptrdiff_t uv = mt_index(2, grad_shape, (ptrdiff_t[]){u, v});
+      ptrdiff_t i_0 = mt_index(2, board_shape, (ptrdiff_t[]){u, v});
+      ptrdiff_t i_1 = mt_index(2, board_shape, (ptrdiff_t[]){u + 1, v});
+      ptrdiff_t j_0 = mt_index(2, board_shape, (ptrdiff_t[]){u, v});
+      ptrdiff_t j_1 = mt_index(2, board_shape, (ptrdiff_t[]){u, v + 1});
+      dsdu[uv] = board->scores[i_1] - board->scores[i_0];
+      dsdv[uv] = board->scores[j_1] - board->scores[j_0];
+    }
+  }
+  // Update score.
+  for (ptrdiff_t i = 0; i < board_shape[0]; ++i) {
+    for (ptrdiff_t j = 0; j < board_shape[1]; ++j) {
+      float next_score = 0;
+      ptrdiff_t ij = mt_index(2, board_shape, (ptrdiff_t[]){i, j});
+      ptrdiff_t u_0 = mt_index(2, grad_shape, (ptrdiff_t[]){i - 1, j});
+      ptrdiff_t u_1 = mt_index(2, grad_shape, (ptrdiff_t[]){i, j});
+      ptrdiff_t v_0 = mt_index(2, grad_shape, (ptrdiff_t[]){i, j - 1});
+      ptrdiff_t v_1 = mt_index(2, grad_shape, (ptrdiff_t[]){i, j});
+      next_score += u_0 < 0 ? 0 : dsdu[u_0];
+      next_score += u_1 < 0 ? 0 : dsdu[u_1];
+      next_score += v_0 < 0 ? 0 : dsdv[v_0];
+      next_score += v_1 < 0 ? 0 : dsdv[v_1];
+      board->scores[ij] = next_score;
+    }
+  }
+  // Done
+  err = MSC_OK;
+  goto end;
+err:
+end:
+  return err;
 }
 
 void push_timeline(timeline_t *t, board_state_t *board,
