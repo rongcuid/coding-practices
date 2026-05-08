@@ -27,8 +27,8 @@ typedef struct {
 } mt_index_t;
 
 typedef struct {
-  ptrdiff_t size;
-  float *data;
+  ptrdiff_t len;
+  float *items;
 } mt_data_t;
 
 typedef struct {
@@ -56,3 +56,5 @@ msc_err_t mt_alloc(mt_shape_t shape, mt_data_t *data,
                    const msc_allocator_t *alloc);
 
 void mt_free(mt_data_t *data, const msc_allocator_t *alloc);
+
+void mt_fill(mt_view_t tensor, float value);

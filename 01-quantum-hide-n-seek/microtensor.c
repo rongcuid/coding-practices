@@ -29,7 +29,7 @@ msc_err_t mt_alloc(mt_shape_t shape, mt_data_t *data,
     goto err;
   }
   if (shape.ndims == 0) {
-    *data = (mt_data_t){.size = 0, .data = nullptr};
+    *data = (mt_data_t){.len = 0, .items = nullptr};
     goto ok_zero;
   }
   ptrdiff_t size = 1;
@@ -43,20 +43,20 @@ msc_err_t mt_alloc(mt_shape_t shape, mt_data_t *data,
   if (size == 0) {
     goto ok_zero;
   }
-  tensor_data = msc_malloc(alloc, size, _Alignof(float));
+  tensor_data = msc_malloc(alloc, size * sizeof(float), _Alignof(float));
   if (tensor_data == nullptr) {
     err = MSC_NOMEM;
     goto err;
   }
-  *data = (mt_data_t){.size = size, .data = tensor_data};
+  *data = (mt_data_t){.len = size, .items = tensor_data};
   goto ok;
 err:
   if (tensor_data != nullptr) {
-    msc_free(alloc, tensor_data, size, _Alignof(float));
+    msc_free(alloc, tensor_data, size * sizeof(float), _Alignof(float));
   }
   goto end;
 ok_zero:
-  *data = (mt_data_t){.size = 0, .data = nullptr};
+  *data = (mt_data_t){.len = 0, .items = nullptr};
 ok:
   err = MSC_OK;
 end:
@@ -64,5 +64,13 @@ end:
 }
 
 void mt_free(mt_data_t *data, const msc_allocator_t *alloc) {
-  msc_free(alloc, data->data, data->size, _Alignof(float));
+  msc_free(alloc, data->items, data->len * sizeof(float), _Alignof(float));
+  data->items = nullptr;
+  data->len = 0;
+}
+
+void mt_fill(mt_view_t tensor, float value) {
+  for (ptrdiff_t i = 0; i < tensor.data.len; ++i) {
+    tensor.data.items[i] = value;
+  }
 }
