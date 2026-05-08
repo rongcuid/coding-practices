@@ -144,6 +144,39 @@ void timeline_deinit(timeline_t *tl) {
   *tl = (timeline_t){0};
 }
 
+/**
+ * @brief Calculate the update gradient of the board given board state and
+ * observations.
+ *
+ * @param board
+ * @param observation
+ * @param dsdu
+ * @param dsdv
+ */
+static void board_gradient(const board_state_t *board,
+                           const observation_t *observation, float *dsdu,
+                           float *dsdv) {
+  const ptrdiff_t board_shape[] = {board->m, board->n};
+  const ptrdiff_t grad_shape[] = {board->m - 1, board->n - 1};
+  for (ptrdiff_t i = 1; i < board_shape[0] - 1; ++i) {
+    for (ptrdiff_t j = 1; j < board_shape[1] - 1; ++j) {
+      // Useful indices.
+      ptrdiff_t ij = mt_index(2, board_shape, (ptrdiff_t[]){i, j});
+      // Exits never diffuse score.
+      if (board->is_exit[ij]) {
+        continue;
+      }
+      ptrdiff_t ij_i_lo = mt_index(2, board_shape, (ptrdiff_t[]){i - 1, j});
+      ptrdiff_t ij_i_hi = mt_index(2, board_shape, (ptrdiff_t[]){i + 1, j});
+      ptrdiff_t ij_j_lo = mt_index(2, board_shape, (ptrdiff_t[]){i, j - 1});
+      ptrdiff_t ij_j_hi = mt_index(2, board_shape, (ptrdiff_t[]){i, j + 1});
+      // If cell is adjacent to one or more exits, score is always diffused into
+      // exits.
+      // If cell is observed, score is cleared and redistributed evenly.
+    }
+  }
+}
+
 // TODO: currently doesn't handle exits.
 msc_err_t observe_hider(const board_state_t *board,
                         const observation_t *observation,
@@ -171,31 +204,20 @@ msc_err_t observe_hider(const board_state_t *board,
   // Compute the gradient.
   const ptrdiff_t board_shape[] = {board->m, board->n};
   const ptrdiff_t grad_shape[] = {board->m - 1, board->n - 1};
-  for (ptrdiff_t u = 0; u < grad_shape[0]; ++u) {
-    for (ptrdiff_t v = 0; v < grad_shape[1]; ++v) {
-      ptrdiff_t uv = mt_index(2, grad_shape, (ptrdiff_t[]){u, v});
-      ptrdiff_t i_0 = mt_index(2, board_shape, (ptrdiff_t[]){u, v});
-      ptrdiff_t i_1 = mt_index(2, board_shape, (ptrdiff_t[]){u + 1, v});
-      ptrdiff_t j_0 = mt_index(2, board_shape, (ptrdiff_t[]){u, v});
-      ptrdiff_t j_1 = mt_index(2, board_shape, (ptrdiff_t[]){u, v + 1});
-      dsdu[uv] = board->scores[i_1] - board->scores[i_0];
-      dsdv[uv] = board->scores[j_1] - board->scores[j_0];
-    }
-  }
+  board_gradient(board, observation, dsdu, dsdv);
   // Update score.
   for (ptrdiff_t i = 0; i < board_shape[0]; ++i) {
     for (ptrdiff_t j = 0; j < board_shape[1]; ++j) {
-      float next_score = 0;
+      float grad = 0;
       ptrdiff_t ij = mt_index(2, board_shape, (ptrdiff_t[]){i, j});
       ptrdiff_t u_0 = mt_index(2, grad_shape, (ptrdiff_t[]){i - 1, j});
       ptrdiff_t u_1 = mt_index(2, grad_shape, (ptrdiff_t[]){i, j});
       ptrdiff_t v_0 = mt_index(2, grad_shape, (ptrdiff_t[]){i, j - 1});
       ptrdiff_t v_1 = mt_index(2, grad_shape, (ptrdiff_t[]){i, j});
-      next_score += u_0 < 0 ? 0 : dsdu[u_0];
-      next_score += u_1 < 0 ? 0 : dsdu[u_1];
-      next_score += v_0 < 0 ? 0 : dsdv[v_0];
-      next_score += v_1 < 0 ? 0 : dsdv[v_1];
-      board->scores[ij] = next_score;
+      grad += u_0 < 0 ? 0 : -dsdu[u_0];
+      grad += u_1 < 0 ? 0 : dsdu[u_1];
+      grad += v_0 < 0 ? 0 : -dsdv[v_0];
+      grad += v_1 < 0 ? 0 : dsdv[v_1];
     }
   }
   // Done
